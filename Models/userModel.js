@@ -3,7 +3,6 @@ const validator = require("validator");
 const bycrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema({
-  userId: mongoose.Schema.Types.ObjectId,
   username: {
     type: String,
     minlength: [3, 'username length  cannot be less then 3 characters'],
@@ -27,13 +26,11 @@ const userSchema = new mongoose.Schema({
 })
 
 userSchema.pre('save', async function () {
-  this.password = await bycrypt.hash(this.password, 10);
-  console.log(this.password);
-
+  this.password = await bycrypt.hash(this.password, 12);
 });
 
-userSchema.methods.comparePass = async function (userPass) {
-  return await bycrypt.compare(this.password.compare, userPass);
+userSchema.methods.comparePassword = async function (userPass) {
+  return await bycrypt.compare(userPass, this.password);
 }
 
 module.exports = mongoose.model('User', userSchema);

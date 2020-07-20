@@ -3,8 +3,7 @@ const Score = require("../Models/scoreModel");
 const AppError = require("../utils/AppError");
 
 exports.createQuiz = async (req, res, next) => {
-  //get the userId from heaader
-  const userId = '5f1533313a26cf4044fd92bb';
+  const { userId } = req;
   const { name, key, questions, duration, deadline } = req.body;
   try {
     const quiz = await Quiz.create({
@@ -61,8 +60,7 @@ exports.getQuiz = async (req, res, next) => {
 
 //all quizzez created by particular user
 exports.getQuizzes = async (req, res, next) => {
-  //get the userId from cookie sent
-  const userId = '5f1533313a26cf4044fd92bb';
+  const { userId } = req;
   const quizzes = await Quiz.find({ createdBy: userId }).select('-createdBy');
   if (quizzes.length === 0)
     throw new AppError(404, 'no quizzes found');
@@ -76,7 +74,7 @@ exports.getQuizzes = async (req, res, next) => {
 
 
 exports.receiveQuizAttempted = async (req, res, next) => {
- 
+
   //get user id from headers...based upon kind of authentication
   const user = "5f15493d7beceb413ce262d5";
   const { quizKey } = req.params;
@@ -102,9 +100,7 @@ exports.receiveQuizAttempted = async (req, res, next) => {
 
 //quizzes a user has attempted
 exports.quizzesAttempted = async (req, res, next) => {
-  //first get user id from headers...kind of auth
-  const userId = '5f15493d7beceb413ce262d5';
-
+  const { userId } = req;
   try {
     const attempts = await Score.find({ user: userId }).select("-user")
       .populate({
