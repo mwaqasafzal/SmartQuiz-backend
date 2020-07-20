@@ -9,10 +9,7 @@ const scoreSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Quiz'
   },
-  takenAt: {
-    type: String,
-    default: (new Date()).toUTCString()
-  },
+  takenAt: String,//will be stored in UTC date i.e string..can to coverted to particular zone at client side
   score: Number
 })
 

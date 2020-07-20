@@ -3,7 +3,8 @@ const Score = require("../Models/scoreModel");
 const AppError = require("../utils/AppError");
 
 exports.createQuiz = async (req, res, next) => {
-  const { userId } = req;
+  // const { userId } = req;
+  const userId = "5f15fe95fc98df353d730196";
   const { name, key, questions, duration, deadline } = req.body;
   try {
     const quiz = await Quiz.create({
@@ -23,7 +24,7 @@ exports.createQuiz = async (req, res, next) => {
     })
   } catch (error) {
     res.status(500).json({
-      success: 'failed',
+      status: 'failed',
       message: error.message
     })
   }
@@ -60,32 +61,41 @@ exports.getQuiz = async (req, res, next) => {
 
 //all quizzez created by particular user
 exports.getQuizzes = async (req, res, next) => {
-  const { userId } = req;
-  const quizzes = await Quiz.find({ createdBy: userId }).select('-createdBy');
-  if (quizzes.length === 0)
-    throw new AppError(404, 'no quizzes found');
-  res.json({
-    status: 'success',
-    data: {
-      quizzes
-    }
-  });
+  // const { userId } = req;
+  const userId = "5f15fe95fc98df353d730196";
+  try {
+    const quizzes = await Quiz.find({ createdBy: userId }).select('-createdBy');
+    res.json({
+      status: 'success',
+      data: {
+        quizzes
+      }
+    });
+  } catch (error) {
+      const statusCode = error.statusCode || 500;
+      res.status(statusCode).json({
+        status:"failed",
+        message:error.message
+      })
+  }
 }
 
 
 exports.receiveQuizAttempted = async (req, res, next) => {
 
-  //get user id from headers...based upon kind of authentication
-  const user = "5f15493d7beceb413ce262d5";
+  // const {userId:user} = req;
+  const user = "5f15fe95fc98df353d730196";
   const { quizKey } = req.params;
-  const { score } = req.body;
+  const { score,takenAt } = req.body;
   try {
-    const { _id } = await Quiz.findOne({ key: quizKey });
+    const { _id } = await Quiz.findOne({ key: quizKey });//no doubt request does have quiz id but 
+                                                        //this makes it sure that quiz is there,not deleted by creator
 
     await Score.create({
       quiz: _id,
       user,
-      score
+      score,
+      takenAt
     });
     res.json({
       status: 'success'
@@ -100,7 +110,8 @@ exports.receiveQuizAttempted = async (req, res, next) => {
 
 //quizzes a user has attempted
 exports.quizzesAttempted = async (req, res, next) => {
-  const { userId } = req;
+  // const { userId } = req;
+  const userId = "5f15fe95fc98df353d730196";
   try {
     const attempts = await Score.find({ user: userId }).select("-user")
       .populate({
@@ -112,8 +123,6 @@ exports.quizzesAttempted = async (req, res, next) => {
         }
       });
 
-    if (attempts.length === 0)
-      throw new AppError('404', "user have not taken any quiz yet");
     const quizzesAttempted = attempts.map(attempt => {
       const { quiz, score, takenAt } = attempt;//after populating quizId is replaced by whole quiz
       const total = quiz.questions.length;
@@ -133,7 +142,7 @@ exports.quizzesAttempted = async (req, res, next) => {
     res.json({
       status: 'success',
       data: {
-        quizzesAttempted
+        quizzes:quizzesAttempted
       }
     })
   } catch (error) {
@@ -150,11 +159,25 @@ exports.quizzesAttempted = async (req, res, next) => {
 //all attempts for particular quiz
 exports.getQuizAttempts = async (req, res, next) => {
   const { quizId } = req.params;
-  const result = await Score.find({ quizId })
-    .select("-quizId")
-    .populate({ path: 'user', select: "username,fullName,email" })
+  const results = await Score.find({ quiz:quizId })
+    .select("-quiz")
+    .populate({ path: 'user', select: "fullName,email" })
 
+  const attendees = await results.map(result=>{
+    const {quiz,score,takenAt} = result;
+    const {fullName,email} = quiz;
+    return {
+      fullName,
+      email,
+      score,
+      takenAt
+    }
+  })
   res.json({
-    result
+    status:"success",
+    data:{
+      attendees
+    }
+   
   })
 }

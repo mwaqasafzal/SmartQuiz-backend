@@ -5,7 +5,7 @@ const app = require("./app");
 dotenv.config({
   path: './config.env'
 });
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 let DB = process.env.LOCAL_DB;
 // if (process.env.NODE_ENV === "development")

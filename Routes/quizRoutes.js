@@ -12,14 +12,14 @@ const { protect } = require("../Controllers/authController");
 const Router = express.Router();
 
 
-Router.get("/attempted", protect, quizzesAttempted);//all quizez attempted
-Router.get("/:quizId/attempts", protect, getQuizAttempts);
+Router.get("/attempted", quizzesAttempted);//all quizez attempted
+Router.get("/:quizId/attempts", getQuizAttempts);
 Router.route('/:quizKey')
-  .get(protect, getQuiz)
-  .post(protect, receiveQuizAttempted);
+  .get( getQuiz)
+  .post( receiveQuizAttempted);
 
 Router.route('/')
-  .get(protect, getQuizzes)
-  .post(protect, createQuiz);
+  .get( getQuizzes)
+  .post( createQuiz);
 
 module.exports = Router;

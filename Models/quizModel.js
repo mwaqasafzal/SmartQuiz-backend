@@ -6,7 +6,11 @@ const quizSchema = new mongoose.Schema({
     unique:[true,'Something went wrong,try again']
   },
   name: String,
-  deadline: String,//string ...utc date
+  deadline: String,//string ...utc date,
+  createdAt: {
+    type: String,
+    default: new Date().toUTCString()
+  },
   questions: [
     {
       questionType: {

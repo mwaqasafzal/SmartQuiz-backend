@@ -1,10 +1,12 @@
 const app = require("express")();
 const bodyParser = require('body-parser');
+const cors = require("cors");
 const userRouter = require("./Routes/userRoutes");
 const quizRouter = require("./Routes/quizRoutes");
 
 
 //middlewares
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
