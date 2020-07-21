@@ -7,6 +7,6 @@ const {getSelf} = require("../Controllers/userController")
 Router.post('/login',login);
 Router.post('/signup',signUp);
 Router.get('/me',protect,getSelf);
-Router.get('/me',protect,logout)
+Router.get('/logout',protect,logout)
 
 module.exports = Router;
