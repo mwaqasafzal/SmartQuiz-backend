@@ -7,7 +7,7 @@ dotenv.config({
 });
 const PORT = process.env.PORT || 5000;
 
-let DB = process.env.LOCAL_DB;
+let DB = process.env.DB;
 // if (process.env.NODE_ENV === "development")
 //   DB = process.env.LOCAL_DB;
 // else
