@@ -2,6 +2,7 @@ const User = require("../Models/userModel");
 const jwt = require("jsonwebtoken");
 const { promisify } = require("util");
 const AppError = require("../utils/AppError");
+const catchAsync = require("../utils/catchAsync");
 
 const signToken = id => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -17,8 +18,10 @@ const createSendToken = (user, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
     httpOnly: true
   });
+
   user.password = undefined;
-  res.json({
+  
+  res.status(201).json({
     status: "success",
     data: {
       user,
@@ -28,79 +31,63 @@ const createSendToken = (user, res) => {
 
 }
 
-exports.login = async (req, res, next) => {
-  try {
+exports.login = catchAsync(
+  async (req, res, next) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user)
-      throw new Error("404 User Not Found");
+      throw new AppError(404,"User Not Found");
+  
     const isValidPass = await user.comparePassword(password);
     if (!isValidPass)
-      throw new Error("Email or Password incorrect");
-
-    createSendToken(user, res);
-
-  } catch (error) {
-    res.json({
-      status: "failed",
-      message: error.message
-    })
+      throw new AppError(403,"Email or Password incorrect");
+    createSendToken(user,res);
+    
   }
-}
+);
 
-exports.signUp = async (req, res, next) => {
-  const { username, fullName, password, email } = req.body;
-  try {
+exports.signUp = catchAsync(
+  async (req,res,next) => {
+    const { fullName, password, email } = req.body;
+    console.log(req.body);
+  
     const user = await User.create({
-      username,
       fullName,
       password,
       email
     });
-
+    console.log(user);
+  
     createSendToken(user, res);
-  } catch (error) {
-    console.log(error);
-    res.status(400).json({
-      status: "failed",
-      message: error.message
-    });
+  
   }
+);
 
-}
-
-exports.protect = async (req, res, next) => {
-  let token;
-  console.log(req.headers);
-  if (req.headers.authorization
-    && req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
-  }
-  else if (req.cookies && req.cookies.jwt) {
-    token = req.cookies.jwt;
-  }
-
-  try {
+exports.protect = catchAsync(
+  async (req, res, next) => {
+    let token;
+    console.log(req.headers);
+    if (req.headers.authorization
+      && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+    else if (req.cookies && req.cookies.jwt) {
+      token = req.cookies.jwt;
+    }
+  
     if (!token)
       throw new AppError(401, 'you are not logged to to access this resource');
     //verifying the token
     const decode = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-
+  
     //checking if the user still exists
     const currentUser = await User.findById(decode.id);
     if (!currentUser)
       throw new AppError(401, 'user belongs to this token does not exists anymore')
-
+  
     //persisting it on request object so that it could be accessable across different middlewares
     req.userId = currentUser._id;
     next();
-
-  } catch (error) {
-    const statusCode = error.code || 500;
-    res.status(statusCode).json({
-      status: "failed",
-      message: error.message
-    });
+  
   }
-
-}
+);

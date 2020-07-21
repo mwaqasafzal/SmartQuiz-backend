@@ -3,12 +3,6 @@ const validator = require("validator");
 const bycrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    minlength: [3, 'username length  cannot be less then 3 characters'],
-    required: true,
-    unique: [true, 'username already exists']
-  },
   fullName: {
     type: String,
     required: true
