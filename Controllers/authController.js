@@ -59,6 +59,15 @@ exports.signUp = catchAsync(
   
   }
 );
+exports.logout=(req,res,next)=>{
+  res.cookie('jwt','loggedout',{
+    expires:new Date(Date.now()+1000*100),
+    httpOnly:true
+  });
+  res.status(200).json({
+    status:"success"
+  });
+}
 
 exports.protect = catchAsync(
   async (req, res, next) => {
