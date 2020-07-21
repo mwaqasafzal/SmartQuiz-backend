@@ -4,8 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser")
 const userRouter = require("./Routes/userRoutes");
 const quizRouter = require("./Routes/quizRoutes");
-// const {addUser} =require("./Seeders/user")
-// addUser();
+
 
 //middlewares
 app.use(cors({

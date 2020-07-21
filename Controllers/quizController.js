@@ -5,8 +5,7 @@ const catchAsync = require('../utils/catchAsync')
 
 exports.createQuiz = catchAsync(
   async (req, res, next) => {
-    // const { userId } = req;
-    const userId = "5f169583f0812d103d8c5e08";
+    const { userId } = req;
     const { name, key, questions, duration, deadline } = req.body;
     const quiz = await Quiz.create({
       name,
@@ -39,6 +38,12 @@ exports.getQuiz = catchAsync(
       const today = new Date();
       if (deadline < today)
         throw new AppError(403, 'Key has been Expired');
+      res.json({
+        status:"success",
+        data:{
+          quiz
+        }
+      })
   }
   
 );
@@ -46,8 +51,7 @@ exports.getQuiz = catchAsync(
 //all quizzez created by particular user
 exports.getQuizzes = catchAsync(
   async (req, res, next) => {
-    // const { userId } = req;
-    const userId = "5f169583f0812d103d8c5e08";
+    const { userId } = req;
     const quizzes = await Quiz.find({ createdBy: userId }).select('-createdBy');
 
     res.json({
@@ -63,11 +67,9 @@ exports.getQuizzes = catchAsync(
 exports.receiveQuizAttempted =catchAsync(
   async (req, res, next) => {
 
-    // const {userId:user} = req;
-    const user = "5f169583f0812d103d8c5e08";
+    const {userId:user} = req;
     const { quizKey } = req.params;
     const { score,takenAt } = req.body;
-   
     const { _id } = await Quiz.findOne({ key: quizKey });//no doubt request does have quiz id but 
     //this makes it sure that quiz is there,not deleted by creator
       await Score.create({
@@ -86,40 +88,40 @@ exports.receiveQuizAttempted =catchAsync(
 //quizzes a user has attempted
 exports.quizzesAttempted = catchAsync(
   async (req, res, next) => {
-    // const { userId } = req;
-    const userId = "5f169583f0812d103d8c5e08";
-    const attempts = await Score.find({ user: userId }).select("-user")
-        .populate({
-          path: 'quiz',
-          select: '-_id -duration -deadline',
-          populate: {
-            path: 'createdBy',
-            select: "-_id -password"
-          }
-        });
-  
-      const quizzesAttempted = attempts.map(attempt => {
-        const { quiz, score, takenAt } = attempt;//after populating quizId is replaced by whole quiz
-        const total = quiz.questions.length;
-        const { name, createdBy } = quiz;
-  
-        return {
-          quizName: name,
-          score,
-          takenAt,
-          score,
-          total,
-          createdBy
-        }
-  
-      });
-  
-      res.json({
-        status: 'success',
-        data: {
-          quizzes:quizzesAttempted
-        }
-      })
+    const { userId } = req;
+    const attempts = await Score.find({ user: userId }).select("-user").populate({
+                                                                                  path: 'quiz',
+                                                                                  select: '-_id -duration -deadline',
+                                                                                  populate:{
+                                                                                    path:'createdBy',
+                                                                                    model:'User',
+                                                                                    select:'-_id'
+                                                                                  }
+                                                                                  });
+                                                          
+    const quizzesAttempted = attempts.map(attempt => {
+      
+      const { quiz, score, takenAt } = attempt;//after populating quizId is replaced by whole quiz
+      const total = quiz.questions.length;
+      const { name, createdBy } = quiz;
+      console.log(quiz);
+      return {
+        quizName: name,
+        score,
+        takenAt,
+        score,
+        total,
+        createdBy
+      }
+
+    });
+
+    res.json({
+      status: 'success',
+      data: {
+        quizzes:quizzesAttempted
+      }
+    })
   }
   
 );

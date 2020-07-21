@@ -3,10 +3,10 @@ const catchAsync = require("../utils/catchAsync")
 
 exports.getSelf=catchAsync(
     async (req,res,next)=>{
-        // const {userId}=req;
-        //at that point it is confirmed user does exist
+        const {userId}=req;
+        // at that point it is confirmed user does exist
         // const userId = "5f169583f0812d103d8c5e08";
-        let userId;
+      
         const user = await User.findById(userId);
      
         if(user){

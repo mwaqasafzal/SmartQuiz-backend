@@ -49,14 +49,11 @@ exports.login = catchAsync(
 exports.signUp = catchAsync(
   async (req,res,next) => {
     const { fullName, password, email } = req.body;
-    console.log(req.body);
-  
     const user = await User.create({
       fullName,
       password,
       email
     });
-    console.log(user);
   
     createSendToken(user, res);
   
@@ -66,7 +63,7 @@ exports.signUp = catchAsync(
 exports.protect = catchAsync(
   async (req, res, next) => {
     let token;
-    console.log(req.headers);
+
     if (req.headers.authorization
       && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
