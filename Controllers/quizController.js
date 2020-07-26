@@ -28,11 +28,15 @@ exports.createQuiz = catchAsync(
 //getting quiz by key..to attempt the quiz
 exports.getQuiz = catchAsync(
   async (req, res, next) => {
-    const { quizKey } = req.params;
+      const { quizKey } = req.params;
       const quiz = await Quiz.findOne({ key: quizKey }).populate('createdBy', '-_id -password');
       if (!quiz)
         throw new AppError(404, "Quiz Not Found");
   
+      //checking either user has already taken this quiz
+      const score = await Score.findOne({quiz:quiz._id,user:req.userId})
+      if(score)
+        throw new AppError(403,"Can't Attempt Again")
       //checking deadline  
       const deadline = new Date(quiz.deadline);
       const today = new Date();
@@ -104,7 +108,6 @@ exports.quizzesAttempted = catchAsync(
       const { quiz, score, takenAt } = attempt;//after populating quizId is replaced by whole quiz
       const total = quiz.questions.length;
       const { name, createdBy } = quiz;
-      console.log(quiz);
       return {
         quizName: name,
         score,
@@ -153,3 +156,11 @@ exports.getQuizAttempts = catchAsync(
     })
   }
 );
+
+exports.removeQuiz=catchAsync(async(req,res,next)=>{
+  await Quiz.deleteOne({_id:req.params.quizId,createdBy:req.userId});
+
+  res.status(200).json({
+    status:"success"
+  })
+})

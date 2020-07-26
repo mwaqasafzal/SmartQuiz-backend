@@ -35,7 +35,7 @@ app.get('/', (req, res, next) => {
 app.use((error,req,res,next)=>{
  
   let code = error.code || 500;
-  console.log(error.message);
+  
   if(code===11000)//duplicate key error,mongoose error code
     code = 403;
 
