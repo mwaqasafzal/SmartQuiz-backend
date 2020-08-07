@@ -64,7 +64,9 @@ exports.signUp = catchAsync(
 exports.logout=(req,res,next)=>{
   res.cookie('jwt','loggedout',{
     expires:new Date(Date.now()+1000*100),
-    httpOnly:true
+    httpOnly:true,
+    sameSite: 'none',
+    secure: true
   });
   res.status(200).json({
     status:"success"
